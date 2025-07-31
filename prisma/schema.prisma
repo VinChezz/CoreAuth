@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String
+  isEmailVerified  Boolean  @default(false)
+
+  name             String @default("Not specified")
+  picture          String @default("/uploads/default-avatar.png")
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  emailVerifications EmailVerificationToken[]
+  passwordResets     PasswordResetToken[]
+  qrSessions         QrLoginSession[]
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique()
+  expiresAt DateTime
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique()
+  expiresAt DateTime
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model QrLoginSession {
+  id        String   @id @default(uuid())
+  code      String   @unique()
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  isUsed    Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
