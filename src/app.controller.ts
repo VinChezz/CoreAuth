@@ -5,9 +5,15 @@ import { Response } from 'express';
 export class AppController {
   @Get('deletion')
   getDeletionPage(@Res() res: Response) {
-    res.status(200).send(`
-      <h1>Facebook User Data Deletion</h1>
-      <p>If you want to delete your data, please contact support@example.com or remove the app from your Facebook settings.</p>
-    `);
+    res.send(`
+    <html>
+      <head>
+        <title>Account Deleted</title>
+      </head>
+      <body>
+        <h1>Your account has been successfully deleted</h1>
+      </body>
+    </html>
+  `);
   }
 }
