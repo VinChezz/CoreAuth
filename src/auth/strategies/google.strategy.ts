@@ -8,9 +8,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientId: configService.get('GOOGLE_CLIENT_ID'),
       clientSecret: configService.get('GOOGLE_CLIENT_SECRET'),
-      callbackUrl: configService.get('SERVER_URL') + '/auth/google/callback',
+      callbackURL: configService.get('SERVER_URL') + '/auth/google/callback',
       scope: ['email', 'profile'],
     });
+    console.log('GOOGLE_CLIENT_ID:', configService.get('GOOGLE_CLIENT_ID'));
+    console.log(
+      'GOOGLE_CLIENT_SECRET:',
+      configService.get('GOOGLE_CLIENT_SECRET'),
+    );
   }
 
   async validate(

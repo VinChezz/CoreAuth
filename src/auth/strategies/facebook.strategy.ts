@@ -26,6 +26,8 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
       facebookId: id,
       name: displayName,
       avatar: photos?.[0]?.value,
+
+      accessToken,
     };
     done(null, user);
   }
