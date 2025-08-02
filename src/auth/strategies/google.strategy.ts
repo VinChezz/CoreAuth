@@ -6,16 +6,11 @@ import { ConfigService } from '@nestjs/config';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private configService: ConfigService) {
     super({
-      clientId: configService.get('GOOGLE_CLIENT_ID'),
-      clientSecret: configService.get('GOOGLE_CLIENT_SECRET'),
+      clientID: configService.get('GOOGLE_CLIENT_ID')!,
+      clientSecret: configService.get('GOOGLE_CLIENT_SECRET')!,
       callbackURL: configService.get('SERVER_URL') + '/auth/google/callback',
-      scope: ['email', 'profile'],
+      scope: ['profile', 'email'],
     });
-    console.log('GOOGLE_CLIENT_ID:', configService.get('GOOGLE_CLIENT_ID'));
-    console.log(
-      'GOOGLE_CLIENT_SECRET:',
-      configService.get('GOOGLE_CLIENT_SECRET'),
-    );
   }
 
   async validate(
@@ -24,12 +19,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: Profile,
     done: VerifyCallback,
   ) {
-    const { photos, emails, displayName } = profile;
+    const { displayName, emails, photos } = profile;
+
     const user = {
-      emails: emails && emails[0] ? emails[0].value : null,
-      name: displayName,
+      email: emails && emails[0] ? emails[0].value : null,
+      name: displayName || 'Not specified',
       picture:
         photos && photos[0] ? photos[0].value : '/uploads/default-avatar.png',
+
       accessToken,
     };
 
