@@ -1,34 +1,36 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
+import { Strategy } from 'passport-facebook';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
   constructor(private configService: ConfigService) {
     super({
-      clientID: configService.get('FACEBOOK_CLIENT_ID'),
-      clientSecret: configService.get('FACEBOOK_CLIENT_SECRET'),
+      clientID: configService.get('FACEBOOK_CLIENT_ID')!,
+      clientSecret: configService.get('FACEBOOK_CLIENT_SECRET')!,
       callbackURL: configService.get('SERVER_URL') + '/auth/facebook/callback',
-      profileFields: ['id', 'emails', 'name', 'picture.type(large)'],
+      scope: ['email', 'public_profile'],
+      profileFields: ['id', 'emails', 'name', 'displayName', 'photos'],
     });
   }
+
   async validate(
     accessToken: string,
     _refreshToken: string,
-    profile: Profile,
-    done: VerifyCallback,
+    profile: any,
+    done: Function,
   ) {
-    const { id, emails, displayName, photos } = profile;
+    const { emails, name, photos } = profile;
 
     const user = {
-      email: emails?.[0]?.value,
-      facebookId: id,
-      name: displayName,
-      avatar: photos?.[0]?.value,
-
+      email: emails && emails[0] ? emails[0].value : null,
+      name: name?.givenName + ' ' + name?.familyName || 'Not specified',
+      picture:
+        photos && photos[0] ? photos[0].value : '/uploads/default-avatar.png',
       accessToken,
     };
+
     done(null, user);
   }
 }
