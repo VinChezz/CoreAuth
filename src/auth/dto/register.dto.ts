@@ -1,4 +1,11 @@
-import { IsEmail, IsString, MinLength, MaxLength } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  MinLength,
+  MaxLength,
+  IsOptional,
+  IsUrl,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsString({ message: 'Username is required' })
@@ -12,5 +19,9 @@ export class RegisterDto {
   @IsString({ message: 'Password must be a string' })
   @MinLength(6, { message: 'Password must contain at least 6 characters' })
   @MaxLength(50, { message: 'Password must be no longer than 50 characters.' })
-  password: string;
+  passwordHash: string;
+
+  @IsOptional()
+  @IsUrl({}, { message: 'Incorrect URL format for avatar' })
+  picture: string;
 }
