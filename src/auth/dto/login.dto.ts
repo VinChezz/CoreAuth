@@ -5,5 +5,5 @@ export class LoginDto {
   email: string;
 
   @IsString({ message: 'Password is required' })
-  password: string;
+  passwordHash: string;
 }
