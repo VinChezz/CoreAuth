@@ -4,6 +4,7 @@ import {
   IsBoolean,
   IsOptional,
   IsUUID,
+  IsUrl,
 } from 'class-validator';
 
 export class UserDto {
@@ -22,6 +23,14 @@ export class UserDto {
   @IsBoolean()
   @IsOptional({ message: 'isEmailVerified must be a boolean' })
   isEmailVerified?: boolean;
+
+  @IsOptional()
+  provider: 'EMAIL' | 'GOOGLE' | 'FACEBOOK';
+
+  @IsOptional()
+  @IsUrl({}, { message: 'Incorrect URL format for avatar' })
+  @IsString({ message: 'Picture must be a string' })
+  picture?: string;
 
   @IsOptional()
   createdAt?: Date;

@@ -90,7 +90,7 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
     const { refreshToken, accessToken, ...response } =
-      await this.authService.validateOAuthLogin(req);
+      await this.authService.validateOAuthLogin('GOOGLE', req);
 
     console.log('Google auth response', { refreshToken, accessToken });
 
@@ -111,7 +111,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const { refreshToken, accessToken, ...response } =
-      await this.authService.validateOAuthLogin(req);
+      await this.authService.validateOAuthLogin('FACEBOOK', req);
 
     console.log('Facebook auth response', { refreshToken, accessToken });
 

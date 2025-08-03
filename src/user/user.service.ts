@@ -14,6 +14,7 @@ export class UserService {
         passwordHash: dto.passwordHash,
         name: dto.name,
         picture: dto.picture,
+        provider: 'EMAIL',
       },
     });
     return this.toUserDto(user);
@@ -56,6 +57,8 @@ export class UserService {
       email: user.email,
       passwordHash: user.passwordHash,
       isEmailVerified: user.isEmailVerified,
+      provider: user.provider,
+      picture: user.picture,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

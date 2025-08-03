@@ -79,27 +79,32 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async validateOAuthLogin(request: any) {
+  async validateOAuthLogin(provider: 'GOOGLE' | 'FACEBOOK', request: any) {
     const { email, name, picture } = request.user;
 
     if (!email) {
       throw new BadRequestException('Email is required');
     }
+
     let user = await this.userService.getByEmail(email);
 
-    if (!user) {
+    if (user) {
+      if (user.provider !== provider) {
+        throw new BadRequestException(
+          `This email is already registered via ${user.provider}. Please use that method to login.`,
+        );
+      }
+    } else {
       user = await this.prisma.user.create({
         data: {
           email,
           name: name || 'Not specified',
           picture: picture || '/uploads/default-avatar.png',
+          provider,
         },
       });
     }
 
-    if (!user) {
-      throw new Error('Failed to create user');
-    }
     const tokens = this.issueTokens(user.id);
 
     return { user, ...tokens };
