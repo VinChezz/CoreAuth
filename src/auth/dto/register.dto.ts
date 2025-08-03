@@ -5,7 +5,9 @@ import {
   MaxLength,
   IsOptional,
   IsUrl,
+  Matches,
 } from 'class-validator';
+import { isUrlOrBase64 } from 'src/validator/is-url-or-base64.validators';
 
 export class RegisterDto {
   @IsString({ message: 'Username is required' })
@@ -22,6 +24,8 @@ export class RegisterDto {
   passwordHash: string;
 
   @IsOptional()
-  @IsUrl({}, { message: 'Incorrect URL format for avatar' })
+  @isUrlOrBase64({
+    message: 'Picture must be a valid URL or base64 image string',
+  })
   picture: string;
 }
