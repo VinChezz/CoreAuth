@@ -11,6 +11,7 @@ model User {
   id               String   @id @default(uuid())
   email            String   @unique
   passwordHash     String?
+  provider         AuthProvider @default(EMAIL)
   isEmailVerified  Boolean  @default(false)
 
   name             String @default("Not specified")
@@ -54,4 +55,10 @@ model QrLoginSession {
   isUsed    Boolean  @default(false)
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+  FACEBOOK
 }
