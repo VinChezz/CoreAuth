@@ -8,17 +8,17 @@ datasource db {
 }
 
 model User {
-  id               String   @id @default(uuid())
-  email            String   @unique
-  passwordHash     String?
-  provider         AuthProvider @default(EMAIL)
-  isEmailVerified  Boolean  @default(false)
+  id              String       @id @default(uuid())
+  email           String       @unique
+  passwordHash    String?
+  provider        AuthProvider @default(EMAIL)
+  isEmailVerified Boolean      @default(false)
 
-  name             String @default("Not specified")
-  picture          String @default("/uploads/default-avatar.png")
+  name    String @default("Not specified")
+  picture String @default("/uploads/default-avatar.png")
 
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   emailVerifications EmailVerificationToken[]
   passwordResets     PasswordResetToken[]
@@ -27,22 +27,22 @@ model User {
 
 model EmailVerificationToken {
   id        String   @id @default(uuid())
-  token     String   @unique()
+  code      String
   expiresAt DateTime
   userId    String
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
 
 model PasswordResetToken {
   id        String   @id @default(uuid())
-  token     String   @unique()
+  code      String
   expiresAt DateTime
   userId    String
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
