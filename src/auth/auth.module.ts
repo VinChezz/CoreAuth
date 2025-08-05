@@ -11,9 +11,9 @@ import { FacebookStrategy } from './strategies/facebook.strategy';
 import { EmailSettingsService } from './services/email/email-settings.service';
 import { PrismaModule } from 'src/prisma.module';
 import { EmailService } from './services/email/email.service';
-import { PasswordService } from './services/password/password.service';
 import { EmailController } from './controllers/email/email.controller';
 import { PasswordController } from './controllers/password/password.controller';
+import { PasswordService } from './services/password/password.service';
 
 @Module({
   imports: [
