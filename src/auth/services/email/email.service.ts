@@ -22,7 +22,7 @@ export class EmailService {
     if (!user) throw new BadRequestException('User not found');
 
     const code = generate6DigitsCode();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     await this.prisma.emailVerificationToken.deleteMany({
       where: { userId: user.id },
@@ -74,5 +74,6 @@ export class EmailService {
     await this.prisma.emailVerificationToken.delete({
       where: { id: token.id },
     });
+    return { message: 'Email verified successfully' };
   }
 }
