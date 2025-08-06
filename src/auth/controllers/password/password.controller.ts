@@ -12,7 +12,7 @@ export class PasswordController {
   @Post('send-code')
   @HttpCode(200)
   sendCode(@Body() dto: RequestPasswordResetDto) {
-    return this.passwordService.sendCode(dto);
+    return this.passwordService.sendCode(dto.email);
   }
 
   @Post('reset-code')

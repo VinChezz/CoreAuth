@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   RequestPasswordResetDto,
   ResetPasswordDto,
@@ -7,20 +7,20 @@ import { PrismaService } from 'src/prisma.service';
 import { generate6DigitsCode } from 'src/utils/generate6DigitsCode';
 import { EmailSettingsService } from '../email/email-settings.service';
 import * as bcrypt from 'bcrypt';
+@Injectable()
 export class PasswordService {
   constructor(
     private prisma: PrismaService,
     private emailSettings: EmailSettingsService,
   ) {}
 
-  async sendCode(dto: RequestPasswordResetDto) {
+  async sendCode(email: string) {
     const user = await this.prisma.user.findUnique({
       where: {
-        email: dto.email,
+        email: email,
       },
     });
     if (!user) {
-      console.log('User not found in database: ', dto.email);
       throw new BadRequestException('User not found');
     }
 
@@ -29,14 +29,13 @@ export class PasswordService {
 
     console.log('User in sendCode:', user);
 
-    await this.prisma.passwordResetToken.create({
-      data: { code, expiresAt, user: { connect: { id: user.id } } },
-    });
-
     await this.prisma.passwordResetToken.deleteMany({
       where: {
         userId: user.id,
       },
+    });
+    await this.prisma.passwordResetToken.create({
+      data: { code, expiresAt, userId: user.id },
     });
 
     const subject = 'Password to reset code';
@@ -72,5 +71,7 @@ export class PasswordService {
     await this.prisma.passwordResetToken.delete({
       where: { id: token.id },
     });
+
+    return { message: 'Password reset successful' };
   }
 }
