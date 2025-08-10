@@ -11,14 +11,17 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { Response } from 'express';
 import { PrismaService } from 'src/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  EXPIRE_DAY_REFRESH_TOKEN = 1;
+  EXPIRE_DAYS_REFRESH_TOKEN = 7;
   REFRESH_TOKEN_NAME = 'refreshToken';
 
-  EXPIRE_MINUTES_ACCESS_TOKEN = 15;
+  EXPIRE_MINUTES_ACCESS_TOKEN = 60;
   ACCESS_TOKEN_NAME = 'accessToken';
+
+  SALT_ROUNDS = 10;
 
   constructor(
     private jwt: JwtService,
@@ -46,16 +49,25 @@ export class AuthService {
   }
 
   async getNewTokens(refreshToken: string) {
-    const result = await this.jwt.verifyAsync(refreshToken);
-    if (!result) throw new UnauthorizedException('Error with refresh token');
+    try {
+      const result = await this.jwt.verifyAsync(refreshToken);
 
-    const user = await this.userService.getById(result.id);
+      if (!result || !result.id) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
 
-    if (!user) throw new UnauthorizedException('User not found');
+      const user = await this.userService.getById(result.id);
 
-    const tokens = this.issueTokens(user.id);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
 
-    return { user, ...tokens };
+      const tokens = this.issueTokens(user.id);
+
+      return { user, ...tokens };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
   }
 
   private async validateUser(dto: LoginDto) {
@@ -69,7 +81,7 @@ export class AuthService {
     const data = { id: userId };
 
     const accessToken = this.jwt.sign(data, {
-      expiresIn: '1h',
+      expiresIn: '15m',
     });
 
     const refreshToken = this.jwt.sign(data, {
@@ -112,7 +124,7 @@ export class AuthService {
 
   addRefreshTokenToResponse(res: Response, refreshToken: string) {
     const expiresIn = new Date();
-    expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAY_REFRESH_TOKEN);
+    expiresIn.setDate(expiresIn.getDate() + this.EXPIRE_DAYS_REFRESH_TOKEN);
 
     res.cookie(this.REFRESH_TOKEN_NAME, refreshToken, {
       httpOnly: true,

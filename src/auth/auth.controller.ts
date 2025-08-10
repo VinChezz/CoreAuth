@@ -26,36 +26,50 @@ export class AuthController {
   @Post('login')
   async login(
     @Body() dto: LoginDto,
-    @Res({ passthrough: true })
-    res: Response,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const { refreshToken, ...response } = await this.authService.login(dto);
+    const { refreshToken, accessToken, ...response } =
+      await this.authService.login(dto);
 
     this.authService.addRefreshTokenToResponse(res, refreshToken);
+    this.authService.addAccessTokenToResponse(res, accessToken);
 
     return response;
   }
 
-  @UsePipes(new ValidationPipe())
   @HttpCode(200)
   @Post('login/access-token')
-  async GetNewTokens(
+  async getNewTokens(
     @Req() req: Request,
-    @Res({ passthrough: true })
-    res: Response,
+    @Body('refreshToken') refreshTokenFromBody: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const refreshTokenFromCookies =
-      req.cookies[this.authService.REFRESH_TOKEN_NAME];
+    const refreshToken =
+      req.cookies?.[this.authService.REFRESH_TOKEN_NAME] ||
+      refreshTokenFromBody;
 
-    if (!refreshTokenFromCookies) {
-      this.authService.removeRefreshTokenToResponse(res);
-      throw new UnauthorizedException('Refresh токен не пройшов');
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token is missing');
     }
-    const { refreshToken, ...response } = await this.authService.getNewTokens(
-      refreshTokenFromCookies,
-    );
 
-    this.authService.addRefreshTokenToResponse(res, refreshToken);
+    const { refreshToken: newRefreshToken, ...response } =
+      await this.authService.getNewTokens(refreshToken);
+
+    res.cookie(this.authService.REFRESH_TOKEN_NAME, newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie(this.authService.ACCESS_TOKEN_NAME, response.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000,
+    });
 
     return response;
   }
@@ -67,9 +81,11 @@ export class AuthController {
     @Body() dto: RegisterDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { refreshToken, ...response } = await this.authService.register(dto);
+    const { refreshToken, accessToken, ...response } =
+      await this.authService.register(dto);
 
     this.authService.addRefreshTokenToResponse(res, refreshToken);
+    this.authService.addAccessTokenToResponse(res, accessToken);
 
     return response;
   }
@@ -77,27 +93,20 @@ export class AuthController {
   @HttpCode(200)
   @Post('logout')
   async logout(@Res({ passthrough: true }) res: Response) {
-    this.authService.removeRefreshTokenToResponse(res);
-    this.authService.removeAccessTokenToResponse(res);
+    res.clearCookie(this.authService.REFRESH_TOKEN_NAME, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.clearCookie(this.authService.ACCESS_TOKEN_NAME, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
 
     return { message: 'Logout successful' };
-  }
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async google(@Req() _req) {}
-
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken, accessToken, ...response } =
-      await this.authService.validateOAuthLogin('GOOGLE', req);
-
-    console.log('Google auth response', { refreshToken, accessToken });
-
-    this.authService.addRefreshTokenToResponse(res, refreshToken);
-    this.authService.addAccessTokenToResponse(res, accessToken);
-
-    return { message: 'Google login successful', status: 200, ...response };
   }
 
   @Get('facebook')
