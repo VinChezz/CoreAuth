@@ -4,7 +4,8 @@ import {
   ResetPasswordDto,
 } from 'src/auth/dto/password-dto/password-reset.dto';
 import { PasswordService } from 'src/auth/services/password/password.service';
-
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('ResetPassword')
 @Controller('auth/password')
 export class PasswordController {
   constructor(private passwordService: PasswordService) {}

@@ -14,7 +14,9 @@ import { QrLoginService } from './qr-login.service';
 import { ConfirmQrLoginDto } from './dto/confirm-qr-login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Auth } from 'src/auth/decorators/auth.decorators';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('QrLogin')
 @Controller('qr-login')
 export class QrLoginController {
   constructor(private readonly qrLoginService: QrLoginService) {}

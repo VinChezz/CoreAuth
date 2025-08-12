@@ -4,7 +4,8 @@ import {
   VerifyEmailDto,
 } from 'src/auth/dto/email-dto/email-verefication.dto';
 import { EmailService } from 'src/auth/services/email/email.service';
-
+import { ApiTags } from '@nestjs/swagger';
+@ApiTags('ConfirmEmail')
 @Controller('auth/email')
 export class EmailController {
   constructor(private emailService: EmailService) {}
